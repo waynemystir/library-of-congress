@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LibraryOfCongressAndroid</string>
+    <string name="loc_pictures">Library of Congress Pictures</string>
+    <string name="action_settings">Settings</string>
+
+</resources>
