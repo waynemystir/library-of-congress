@@ -34,36 +34,56 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
         pagerAdapter = new SwipeModePagerAdapter(getSupportFragmentManager());
+        viewPager = (ViewPager) findViewById(R.id.viewPager);
         viewPager.setAdapter(pagerAdapter);
 
-        periodCycleFragment = new PeriodCycleFragment();
-        final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragmentFrame, periodCycleFragment);
-        ft.commit();
+        if (savedInstanceState == null) {
+            periodCycleFragment = new PeriodCycleFragment();
+            final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.fragmentFrame, periodCycleFragment, "periodCycleFragment");
+            ft.commit();
 
-        new GetLibraryData().execute();
+            new GetLibraryData().execute();
+        } else {
+            periodCycleFragment = (PeriodCycleFragment) getSupportFragmentManager().findFragmentByTag("periodCycleFragment");
+            periodOrPager = savedInstanceState.getBoolean("periodOrPager");
+        }
 
-        final View ff = findViewById(R.id.fragmentFrame);
+        setupPeriodOrPager(true);
 
         final Button b = (Button) findViewById(R.id.switchFragments);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!periodOrPager) {
-                    ff.setVisibility(View.GONE);
-                    viewPager.setVisibility(View.VISIBLE);
-                    b.setText("Grid View");
-                } else {
-                    ff.setVisibility(View.VISIBLE);
-                    viewPager.setVisibility(View.GONE);
-                    b.setText("View Pager");
-                }
-
-                periodOrPager = !periodOrPager;
+                setupPeriodOrPager(false);
+                periodOrPager ^= true;
             }
         });
+    }
+
+    private void setupPeriodOrPager(boolean flip) {
+        final View ff = findViewById(R.id.fragmentFrame);
+        final Button b = (Button) findViewById(R.id.switchFragments);
+
+        boolean pop = periodOrPager;
+        pop ^= flip;
+
+        if (!pop) {
+            ff.setVisibility(View.GONE);
+            viewPager.setVisibility(View.VISIBLE);
+            b.setText("Grid View");
+        } else {
+            ff.setVisibility(View.VISIBLE);
+            viewPager.setVisibility(View.GONE);
+            b.setText("View Pager");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("periodOrPager", periodOrPager);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -122,6 +142,12 @@ public class MainActivity extends FragmentActivity {
     public static class SwipeModePageFragment extends Fragment {
 
         public LibraryOfCongressRecord record;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+        }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
